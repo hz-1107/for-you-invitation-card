@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>聖誕節邀請</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DotGothic16', sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            padding: 30px 20px;
+            image-rendering: pixelated;
+        }
+
+        /* 像素雪花 */
+        .snowflake {
+            position: fixed;
+            background: #fff;
+            top: -10px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh);
+            }
+        }
+
+        .title {
+            font-size: 36px;
+            line-height: 1.8;
+            text-align: center;
+            letter-spacing: 4px;
+            position: relative;
+            z-index: 10;
+            margin-bottom: 50px;
+            color: #ffdd44;
+            text-shadow:
+                /* 深色描邊 */
+                -2px -2px 0 #cc6600,
+                2px -2px 0 #cc6600,
+                -2px 2px 0 #cc6600,
+                2px 2px 0 #cc6600,
+                /* 底部陰影（立體感） */
+                0 4px 0 #ff8800,
+                0 5px 0 #cc6600,
+                0 6px 0 #994400,
+                /* 光暈 */
+                0 0 25px rgba(255, 221, 68, 0.5);
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+            min-height: 80px;
+        }
+
+        .btn-no {
+            transition: none;
+        }
+
+        .btn-no.escaping {
+            position: fixed;
+        }
+
+        /* 開始畫面 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        .start-screen.fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        .start-text {
+            font-size: 16px;
+            color: #ffdd44;
+            margin-top: 30px;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 像素信封 */
+        .envelope {
+            width: 180px;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope img {
+            width: 100%;
+            image-rendering: pixelated;
+        }
+
+        .escape-message {
+            font-size: 20px;
+            color: #ffdd44;
+            position: fixed;
+            white-space: nowrap;
+            animation: fadeIn 0.3s ease;
+            z-index: 5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .result-message {
+            font-size: 36px;
+            line-height: 1.8;
+            text-align: center;
+            letter-spacing: 4px;
+            position: relative;
+            z-index: 10;
+            color: #ffdd44;
+            text-shadow:
+                -2px -2px 0 #cc6600,
+                2px -2px 0 #cc6600,
+                -2px 2px 0 #cc6600,
+                2px 2px 0 #cc6600,
+                0 4px 0 #ff8800,
+                0 5px 0 #cc6600,
+                0 6px 0 #994400,
+                0 0 25px rgba(255, 221, 68, 0.5);
+            opacity: 0;
+        }
+
+        .input-container {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            z-index: 10;
+            position: relative;
+        }
+
+        .place-input {
+            font-family: 'DotGothic16', sans-serif;
+            font-size: 18px;
+            padding: 15px 20px;
+            width: 280px;
+            background: #000;
+            color: #ffdd44;
+            border: 3px solid #ffdd44;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .place-input::placeholder {
+            color: #997700;
+        }
+
+        .place-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 221, 68, 0.5);
+        }
+
+        /* 小螢幕手機 */
+        @media screen and (max-width: 380px) {
+            .result-message {
+                font-size: 28px;
+                letter-spacing: 2px;
+            }
+
+            .place-input {
+                font-size: 16px;
+                width: 240px;
+            }
+        }
+
+        /* 較大螢幕 */
+        @media screen and (min-width: 501px) {
+            .result-message {
+                font-size: 42px;
+                letter-spacing: 6px;
+            }
+
+            .place-input {
+                font-size: 20px;
+                width: 320px;
+            }
+        }
+
+        .btn {
+            font-family: 'DotGothic16', sans-serif;
+            font-size: 18px;
+            padding: 15px 0;
+            width: 140px;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            transition: all 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+        }
+
+        .btn-yes {
+            background: #44dd66;
+            color: #003300;
+            box-shadow:
+                0 4px 0 #22aa44,
+                0 5px 0 #118833,
+                0 6px 0 #006622;
+        }
+
+        .btn-yes:active {
+            box-shadow:
+                0 1px 0 #22aa44,
+                0 2px 0 #118833;
+        }
+
+        .btn-no {
+            background: #ff4455;
+            color: #330000;
+            box-shadow:
+                0 4px 0 #cc2233,
+                0 5px 0 #aa1122,
+                0 6px 0 #880011;
+        }
+
+        .btn-no:active {
+            box-shadow:
+                0 1px 0 #cc2233,
+                0 2px 0 #aa1122;
+        }
+
+        /* 小螢幕手機 */
+        @media screen and (max-width: 380px) {
+            .title {
+                font-size: 28px;
+                letter-spacing: 2px;
+                text-shadow:
+                    -2px -2px 0 #cc6600,
+                    2px -2px 0 #cc6600,
+                    -2px 2px 0 #cc6600,
+                    2px 2px 0 #cc6600,
+                    0 3px 0 #ff8800,
+                    0 4px 0 #cc6600,
+                    0 0 15px rgba(255, 221, 68, 0.4);
+            }
+
+            .btn {
+                font-size: 16px;
+                padding: 12px 0;
+                width: 120px;
+            }
+
+            .buttons {
+                gap: 20px;
+            }
+        }
+
+        /* 中等螢幕 */
+        @media screen and (min-width: 381px) and (max-width: 500px) {
+            .title {
+                font-size: 32px;
+            }
+        }
+
+        /* 較大螢幕 */
+        @media screen and (min-width: 501px) {
+            .title {
+                font-size: 42px;
+                letter-spacing: 6px;
+            }
+
+            .btn {
+                font-size: 20px;
+                padding: 18px 0;
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgm" loop>
+        <source src="fly me to the moon.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 開始畫面 -->
+    <div class="start-screen" id="startScreen">
+        <div class="envelope" id="envelope">
+            <img src="像素信封.png" alt="信封">
+        </div>
+        <div class="start-text">點擊開啟</div>
+    </div>
+
+    <h1 class="title">
+        妳願意跟我一起<br>
+        過今年的聖誕節嗎
+    </h1>
+
+    <div class="buttons">
+        <button class="btn btn-yes" onclick="sayYes()">願意</button>
+        <button class="btn btn-no" onclick="sayNo()">不願意</button>
+    </div>
+
+    <script>
+        // 偵測是否為手機
+        const isMobile = window.innerWidth <= 600;
+
+        // 創建像素雪花
+        function createSnowflakes() {
+            const count = isMobile ? 25 : 40;
+            for (let i = 0; i < count; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.style.left = Math.random() * 100 + 'vw';
+                snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                snowflake.style.animationDelay = Math.random() * 8 + 's';
+                snowflake.style.opacity = Math.random() * 0.4 + 0.3;
+
+                // 小方塊雪花 (2-4px)
+                const size = (Math.floor(Math.random() * 2) + 1) * 2;
+                snowflake.style.width = size + 'px';
+                snowflake.style.height = size + 'px';
+
+                document.body.appendChild(snowflake);
+            }
+        }
+
+        // 發送記錄到 Formspree
+        function sendRecord(choice, place = '') {
+            fetch('https://formspree.io/f/xgaobkrn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    選擇: choice,
+                    想去的地方: place
+                })
+            });
+        }
+
+        // 按鈕功能
+        function sayYes() {
+            const title = document.querySelector('.title');
+            const buttons = document.querySelector('.buttons');
+            const escapeMsg = document.querySelector('.escape-message');
+
+            // 淡出標題和按鈕
+            title.classList.add('fade-out');
+            buttons.classList.add('fade-out');
+            if (escapeMsg) escapeMsg.classList.add('fade-out');
+
+            // 等待淡出完成後顯示第一句
+            setTimeout(() => {
+                title.style.display = 'none';
+                buttons.style.display = 'none';
+                if (escapeMsg) escapeMsg.remove();
+
+                // 創建結果訊息
+                const msg1 = document.createElement('div');
+                msg1.className = 'result-message';
+                msg1.textContent = '就這樣說定了喔';
+                document.body.appendChild(msg1);
+
+                // 淡入第一句
+                setTimeout(() => {
+                    msg1.classList.add('fade-in');
+                }, 100);
+
+                // 淡出第一句，顯示第二句
+                setTimeout(() => {
+                    msg1.classList.remove('fade-in');
+                    msg1.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        msg1.textContent = '想去哪都可以跟我說喔';
+                        msg1.classList.remove('fade-out');
+                        msg1.classList.add('fade-in');
+
+                        // 顯示輸入框
+                        const inputContainer = document.createElement('div');
+                        inputContainer.className = 'input-container';
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'place-input';
+                        input.placeholder = '想去的地方...';
+
+                        // 送出功能
+                        function submitPlace() {
+                            if (input.value.trim()) {
+                                sendRecord('願意', input.value.trim());
+                                input.disabled = true;
+                                input.value = '已送出 ♥';
+                                submitBtn.style.display = 'none';
+                            }
+                        }
+
+                        // 監聽 Enter 鍵送出
+                        input.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') submitPlace();
+                        });
+
+                        // 送出按鈕
+                        const submitBtn = document.createElement('button');
+                        submitBtn.className = 'btn btn-yes';
+                        submitBtn.textContent = '送出';
+                        submitBtn.onclick = submitPlace;
+
+                        inputContainer.appendChild(input);
+                        inputContainer.appendChild(submitBtn);
+                        document.body.appendChild(inputContainer);
+
+                        setTimeout(() => {
+                            inputContainer.classList.add('fade-in');
+                        }, 500);
+
+                    }, 1000);
+                }, 2000);
+
+            }, 1000);
+        }
+
+        function sayNo() {
+            sendRecord('不願意');
+        }
+
+        // 不願意按鈕逃跑
+        const btnNo = document.querySelector('.btn-no');
+        const btnYes = document.querySelector('.btn-yes');
+        const title = document.querySelector('.title');
+        let escapeCount = 0;
+        let originalYesPos = null;
+        let originalNoPos = null;
+        let titlePos = null;
+        const messages = [
+            '再考慮一下嘛',
+            '真的不要嗎',
+            '好吧妳贏了'
+        ];
+
+        // 檢查是否與元素重疊
+        function isOverlapping(x, y, btnWidth, btnHeight, elementRect, padding = 20) {
+            return !(x + btnWidth + padding < elementRect.left ||
+                     x > elementRect.right + padding ||
+                     y + btnHeight + padding < elementRect.top ||
+                     y > elementRect.bottom + padding);
+        }
+
+        function escapeButton() {
+            if (escapeCount >= 3) return;
+
+            // 第一次逃跑時，記錄並固定位置
+            if (escapeCount === 0) {
+                originalYesPos = btnYes.getBoundingClientRect();
+                originalNoPos = btnNo.getBoundingClientRect();
+                titlePos = title.getBoundingClientRect();
+
+                btnYes.style.position = 'fixed';
+                btnYes.style.left = originalYesPos.left + 'px';
+                btnYes.style.top = originalYesPos.top + 'px';
+            }
+
+            // 刪除上一次的文字訊息
+            const oldMsg = document.querySelector('.escape-message');
+            if (oldMsg) oldMsg.remove();
+
+            // 顯示文字訊息在紅色按鈕當前位置
+            const rect = escapeCount === 0 ? originalNoPos : btnNo.getBoundingClientRect();
+            const msg = document.createElement('div');
+            msg.className = 'escape-message';
+            msg.textContent = messages[escapeCount];
+            msg.style.left = rect.left + 'px';
+            msg.style.top = rect.top + 'px';
+            document.body.appendChild(msg);
+
+            escapeCount++;
+
+            if (escapeCount >= 3) {
+                // 第三次：按鈕回到原位
+                btnNo.classList.add('escaping');
+                btnNo.style.left = originalNoPos.left + 'px';
+                btnNo.style.top = originalNoPos.top + 'px';
+                return;
+            }
+
+            // 按鈕逃跑到隨機位置
+            btnNo.classList.add('escaping');
+
+            const btnWidth = btnNo.offsetWidth;
+            const btnHeight = btnNo.offsetHeight;
+            const padding = 20;
+
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+
+            let newX, newY;
+            let attempts = 0;
+
+            // 確保不會跟標題和綠色按鈕重疊
+            do {
+                newX = Math.random() * maxX;
+                newY = Math.random() * maxY;
+                newX = Math.max(padding, newX);
+                newY = Math.max(padding, newY);
+                attempts++;
+            } while (
+                attempts < 50 &&
+                (isOverlapping(newX, newY, btnWidth, btnHeight, originalYesPos) ||
+                 isOverlapping(newX, newY, btnWidth, btnHeight, titlePos))
+            );
+
+            btnNo.style.left = newX + 'px';
+            btnNo.style.top = newY + 'px';
+        }
+
+        // 電腦：滑鼠靠近就逃跑
+        btnNo.addEventListener('mouseenter', escapeButton);
+
+        // 手機：手指靠近就逃跑
+        btnNo.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            escapeButton();
+        });
+
+        // 開始畫面
+        const startScreen = document.getElementById('startScreen');
+        const envelope = document.getElementById('envelope');
+        const bgm = document.getElementById('bgm');
+
+        startScreen.addEventListener('click', function() {
+            // 開始播放音樂
+            bgm.volume = 0.3;
+            bgm.play();
+
+            // 淡出開始畫面
+            startScreen.classList.add('fade-out');
+
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+            }, 1000);
+        });
+
+        // 初始化
+        createSnowflakes();
+    </script>
+</body>
+</html>
